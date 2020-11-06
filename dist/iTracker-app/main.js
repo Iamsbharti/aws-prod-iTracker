@@ -50,7 +50,7 @@ class LoginComponent {
             password: this.password,
         };
         this.userService.loginService(userData).subscribe((response) => {
-            console.log('login res:', response);
+            console.debug('login res:', response);
             this.loginResponse = `${response.message} --taking you to dashboard`;
             this.responseType = true;
             const { name, email, username, userId, authToken } = response.data;
@@ -76,7 +76,7 @@ class LoginComponent {
         });
     }
     navigateToHome() {
-        console.log('navigation');
+        console.debug('navigation');
         this.router.navigate(['/home']);
     }
 }
@@ -721,14 +721,16 @@ class SingleIssueComponent {
         this.showStatusList = true;
         this.name = ng2_cookies__WEBPACK_IMPORTED_MODULE_1__["Cookie"].get('name');
         this.userId = ng2_cookies__WEBPACK_IMPORTED_MODULE_1__["Cookie"].get('userId');
-        this.getImageUrl = 'http://localhost:3001/api/v1/issue/attachment?';
+        // this.getImageUrl = 'http://localhost:3001/api/v1/issue/attachment?';
+        this.getImageUrl =
+            'http://api.itracker.kanbanboard.co.in/api/v1/issue/attachment?';
         this.authToken = ng2_cookies__WEBPACK_IMPORTED_MODULE_1__["Cookie"].get('authToken');
         this.statusOptions = ['Backlogs', 'Progress', 'Test', 'Done'];
         this.priorityOptions = ['High', 'Medium', 'Low'];
     }
     ngOnInit() {
         if (this.issueDetails) {
-            console.error('UPDATING I?P FIELDS::', this.issueDetails);
+            console.debug('UPDATING I?P FIELDS::', this.issueDetails);
             this.updatedTitle = this.issueDetails.title;
             this.editorDesc = this.issueDetails.description;
             this.commentsList = this.issueDetails.comments;
@@ -736,7 +738,7 @@ class SingleIssueComponent {
     }
     // fetch all users
     fetchAllUsers() {
-        console.log('user id from dashboard', this.userId);
+        console.debug('user id from dashboard', this.userId);
         const authDetails = {
             userId: this.userId,
         };
@@ -753,13 +755,13 @@ class SingleIssueComponent {
         }, 
         // handle error response
         (error) => {
-            console.log('Error fetching user details', error);
+            console.warn('Error fetching user details', error);
             this.toaster.open({ text: 'Something went wrong', type: 'danger' });
         });
     }
     getAssigneeName(userList, assigneeId) {
         // update the assignee name
-        console.log('get assignee name user list:', userList, assigneeId);
+        console.debug('get assignee name user list:', userList, assigneeId);
         const currentAssigneeObject = userList.find((usr) => {
             return usr.userId === assigneeId;
         });
@@ -773,7 +775,7 @@ class SingleIssueComponent {
     }
     // hide and show update fields
     showUpdateField(field, selectedObj) {
-        console.log('hide/show update options', selectedObj);
+        console.debug('hide/show update options', selectedObj);
         switch (field) {
             case 'title':
                 this.showTitleInput = !this.showTitleInput;
@@ -805,8 +807,8 @@ class SingleIssueComponent {
     }
     // capture the editor's content
     onChange(event, field) {
-        console.error(event.data);
-        console.log('event__change--watch,', event, field);
+        console.debug(event.data);
+        console.debug('event__change--watch,', event, field);
         switch (field) {
             case 'title':
                 this.updatedTitle = event.target.value;
@@ -826,7 +828,7 @@ class SingleIssueComponent {
     }
     // update fields
     updateField(field, operation) {
-        console.log('updating field', field);
+        console.debug('updating field', field);
         let updateIssue = {
             userId: this.userId,
             issueId: this.issueDetails.issueId,
@@ -834,13 +836,13 @@ class SingleIssueComponent {
         };
         switch (field) {
             case 'title':
-                console.error('title updated,', this.updatedTitle);
+                console.debug('title updated,', this.updatedTitle);
                 updateIssue = Object.assign(Object.assign({}, updateIssue), { updates: { title: this.updatedTitle } });
                 // call update api
                 this.updateFieldServiceCall(updateIssue, field);
                 break;
             case 'desc':
-                console.error('description updated', this.editorDesc);
+                console.debug('description updated', this.editorDesc);
                 updateIssue = Object.assign(Object.assign({}, updateIssue), { updates: {
                         description: this.editorDesc === undefined
                             ? this.issueDetails.description
@@ -850,7 +852,7 @@ class SingleIssueComponent {
                 this.updateFieldServiceCall(updateIssue, field);
                 break;
             case 'assignee':
-                console.log('updating assignee', this.currentAssignee);
+                console.debug('updating assignee', this.currentAssignee);
                 updateIssue = Object.assign(Object.assign({}, updateIssue), { updates: {
                         assignee: this.currentAssignee,
                     } });
@@ -858,9 +860,9 @@ class SingleIssueComponent {
                 this.updateFieldServiceCall(updateIssue, field);
                 break;
             case 'watchlist':
-                console.log('updating watchlist', this.updatedWatchList);
+                console.debug('updating watchlist', this.updatedWatchList);
                 const updatedWatchListIds = this.getUsersObjectIds(this.updatedWatchList);
-                console.log('watchlist ids to be updated', updatedWatchListIds);
+                console.debug('watchlist ids to be updated', updatedWatchListIds);
                 updateIssue = Object.assign(Object.assign({}, updateIssue), { updates: {
                         operation: 'watch',
                         watchList: updatedWatchListIds,
@@ -869,31 +871,31 @@ class SingleIssueComponent {
                 this.updateFieldServiceCall(updateIssue, field);
                 break;
             case 'watch':
-                console.log('add current user to watchlist');
+                console.debug('add current user to watchlist');
                 const currentUserObject = this.getCurrentObjectId(this.issueDetails.watchListOptions);
-                console.log('currentuserobjectid', currentUserObject);
+                console.debug('currentuserobjectid', currentUserObject);
                 updateIssue = Object.assign(Object.assign({}, updateIssue), { updates: {
                         watchList: currentUserObject._id,
                         operation: 'watch',
                     } });
-                console.log('add to watch list:', updateIssue);
+                console.debug('add to watch list:', updateIssue);
                 // call update api
                 this.updateFieldServiceCall(updateIssue, field, currentUserObject);
                 break;
             case 'unwatch':
-                console.log('remove current user to watchlist');
+                console.debug('remove current user to watchlist');
                 const currentUserWatchObject = this.getCurrentObjectId(this.issueDetails.watchListOptions);
-                console.log('currentuserobjectid', currentUserWatchObject);
+                console.debug('currentuserobjectid', currentUserWatchObject);
                 updateIssue = Object.assign(Object.assign({}, updateIssue), { updates: {
                         watchList: currentUserWatchObject._id,
                         operation: 'unwatch',
                     } });
-                console.log('add to watch list:', updateIssue);
+                console.debug('add to watch list:', updateIssue);
                 // call update api
                 this.updateFieldServiceCall(updateIssue, field, currentUserWatchObject);
                 break;
             case 'priority':
-                console.log('updating priority', this.currentPriority);
+                console.debug('updating priority', this.currentPriority);
                 updateIssue = Object.assign(Object.assign({}, updateIssue), { updates: {
                         priority: this.currentPriority,
                     } });
@@ -901,7 +903,7 @@ class SingleIssueComponent {
                 this.updateFieldServiceCall(updateIssue, field);
                 break;
             case 'status':
-                console.log('updating status', this.currentStatus);
+                console.debug('updating status', this.currentStatus);
                 updateIssue = Object.assign(Object.assign({}, updateIssue), { updates: {
                         status: this.currentStatus,
                     } });
@@ -925,7 +927,7 @@ class SingleIssueComponent {
      */
     // add watchlist standalone rule
     addWatchersId(toAddList) {
-        console.log('to add watchlist:', toAddList);
+        console.debug('to add watchlist:', toAddList);
         const { _id } = toAddList;
         const updateIssue = {
             userId: this.userId,
@@ -940,9 +942,9 @@ class SingleIssueComponent {
     }
     // remove watchlist standalone rule
     removeWatcherId(toRemoveList) {
-        console.log('to remove watchlist:', toRemoveList);
+        console.debug('to remove watchlist:', toRemoveList);
         const { _id } = toRemoveList;
-        console.log(_id);
+        console.debug(_id);
         const updateWatchList = {
             userId: this.userId,
             issueId: this.issueDetails.issueId,
@@ -951,14 +953,14 @@ class SingleIssueComponent {
                 operation: 'unwatch',
             },
         };
-        console.log('updateissue:', updateWatchList);
+        console.debug('updateissue:', updateWatchList);
         // call update api
         this.updateFieldServiceCall(updateWatchList, 'unwatch', toRemoveList);
     }
     updateFieldServiceCall(updateIssue, field, currentObject) {
-        console.log('update options body:', updateIssue);
+        console.debug('update options body:', updateIssue);
         this.issueService.updateIssue(updateIssue).subscribe((response) => {
-            console.error('update issue response:', response);
+            console.debug('update issue response:', response);
             if (response.status === 200) {
                 // this.toaster.open({ text: 'Issue Updated', type: 'info' });
                 const toasterObj = this.toast.success(`${field} updated`, 'Issue Updated');
@@ -976,7 +978,7 @@ class SingleIssueComponent {
         });
     }
     updateCurrentIssueObject(field, updateIssue, currentObject) {
-        console.error('updating current object', updateIssue);
+        console.debug('updating current object', updateIssue);
         let message = ''; // for socket notification
         switch (field) {
             case 'title':
@@ -995,25 +997,25 @@ class SingleIssueComponent {
                 // get name for assignee id
                 const { assigneeOptions } = this.issueDetails;
                 const assigneeName = this.getAssigneeName(assigneeOptions, this.currentAssignee);
-                console.log('assigneename upating to ', assigneeName);
+                console.debug('assigneename upating to ', assigneeName);
                 this.issueDetails = Object.assign(Object.assign({}, this.issueDetails), { assigneeName });
                 message = `${this.name} changed assignee to ${assigneeName}`;
                 // emit update event
                 this.emitIssueUpdateEvent(updateIssue, field, message);
                 break;
             case 'watchlist':
-                console.log(' upating current issue with new watchlist', this.issueDetails.watchList);
+                console.debug(' upating current issue with new watchlist', this.issueDetails.watchList);
                 this.issueDetails.watchList.push(this.updatedWatchList);
-                console.log('after new watchlist added,', this.issueDetails.watchList);
+                console.debug('after new watchlist added,', this.issueDetails.watchList);
                 message = `${this.name} updated watchlist`;
                 // emit update event
                 this.emitIssueUpdateEvent(updateIssue, field, message);
                 break;
             case 'watch':
-                console.log('update currentuser as watchlist');
+                console.debug('update currentuser as watchlist');
                 this.issueDetails.watchList.push(currentObject);
                 if (currentObject.userId === this.userId) {
-                    console.log('set iswatcher flag');
+                    console.debug('set iswatcher flag');
                     this.issueDetails.isWatcher = true;
                 }
                 message = `${this.name} updated watchlist`;
@@ -1021,13 +1023,13 @@ class SingleIssueComponent {
                 this.emitIssueUpdateEvent(updateIssue, field, message);
                 break;
             case 'unwatch':
-                console.log('remove watcher', currentObject.userId);
+                console.debug('remove watcher', currentObject.userId);
                 this.issueDetails.watchList = this.issueDetails.watchList.filter((usr) => usr.userId !== currentObject.userId);
                 if (currentObject.userId === this.userId) {
-                    console.log('set iswatcher flag');
+                    console.debug('set iswatcher flag');
                     this.issueDetails.isWatcher = false;
                 }
-                console.log('updated watchlist after removal', this.issueDetails.watchList);
+                console.debug('updated watchlist after removal', this.issueDetails.watchList);
                 message = `${this.name} updated watchlist`;
                 // emit update event
                 this.emitIssueUpdateEvent(updateIssue, field, message);
@@ -1071,11 +1073,11 @@ class SingleIssueComponent {
     manageComments(commentDetails) {
         const { operation } = commentDetails;
         this.issueService.manageCommentService(commentDetails).subscribe((response) => {
-            console.log('add comment res:', response);
+            console.debug('add comment res:', response);
             if (response.status === 200) {
                 // this.toaster.open({ text: response.message, type: 'secondary' });
                 this.toast.success(`${response.message}`, 'Comments', this.toastConfig);
-                console.log('created/new comments to be updated', response.data);
+                console.debug('created/new comments to be updated', response.data);
                 if (operation === 'add') {
                     this.updateCurrentCommentObject(Object.assign(Object.assign({}, response.data), { operation }));
                 }
@@ -1087,7 +1089,7 @@ class SingleIssueComponent {
         });
     }
     updateCurrentCommentObject(newCommentObject) {
-        console.log('update current comment object', newCommentObject);
+        console.debug('update current comment object', newCommentObject);
         const { operation, userId, commentId, text } = newCommentObject;
         let message = '';
         switch (operation) {
@@ -1101,7 +1103,7 @@ class SingleIssueComponent {
             case 'edit':
                 // find the current issue's commentsid and update the text
                 this.issueDetails.comments = this.issueDetails.comments.map((iss) => iss.commentId === commentId ? Object.assign(Object.assign({}, iss), { text }) : iss);
-                console.log('new comments list:', this.issueDetails.comments);
+                console.debug('new comments list:', this.issueDetails.comments);
                 break;
             case 'delete':
                 // filter out the current comment id object
@@ -1111,7 +1113,7 @@ class SingleIssueComponent {
     }
     // upload attachments
     handleUpload(value) {
-        console.error('handle upload', value.target.files);
+        console.debug('handle upload', value.target.files);
         const data = new FormData();
         data.append('file', value.target.files[0]);
         const fileDetails = {
@@ -1120,7 +1122,7 @@ class SingleIssueComponent {
             formData: data,
         };
         this.issueService.uploadAttachment(fileDetails).subscribe((response) => {
-            console.log('upload response:', response);
+            console.debug('upload response:', response);
             if (response.status === 200) {
                 // this.toaster.open({ text: response.message, type: 'success' });
                 this.toast.success(`${response.message}`, 'Attachment', this.toastConfig);
@@ -1144,7 +1146,7 @@ class SingleIssueComponent {
                 return response;
             }
         }, (error) => {
-            console.log('Error Fecthing image', error);
+            console.warn('Error Fecthing image', error);
             // this.toaster.open({ text: 'Something went Wrong', type: 'danger' });
             this.toast.success(`${error.error.message}`, 'Image View', this.toastConfig);
         });
@@ -1156,7 +1158,7 @@ class SingleIssueComponent {
             filename,
         };
         this.issueService.deleteAttachmentService(fileDetails).subscribe((response) => {
-            console.log('Delete Attachment Response:', response);
+            console.debug('Delete Attachment Response:', response);
             if (response.status === 200) {
                 // this.toaster.open({ text: response.message, type: 'success' });
                 this.toast.success(`${response.message}`, 'Attachment', this.toastConfig);
@@ -1164,7 +1166,7 @@ class SingleIssueComponent {
                 this.issueDetails.attachment = this.issueDetails.attachment.filter((iss) => iss.filename !== filename);
             }
         }, (error) => {
-            console.log('Error Deleting image', error);
+            console.warn('Error Deleting image', error);
             // this.toaster.open({ text: 'Something went Wrong', type: 'danger' });
             this.toast.success('Something went Wrong', 'Attachment', this.toastConfig);
         });
@@ -1175,10 +1177,10 @@ class SingleIssueComponent {
         const watchListUsersIds = this.issueDetails.watchList.map((usr) => {
             return usr.userId;
         });
-        console.log('watchlist with userids', watchListUsersIds);
+        console.debug('watchlist with userids', watchListUsersIds);
         upadtedIssueDetails = Object.assign(Object.assign({}, upadtedIssueDetails), { field,
             message, watchList: watchListUsersIds.filter((ids) => ids !== this.userId) });
-        console.log('emit event from client::issuedetails', upadtedIssueDetails);
+        console.debug('emit event from client::issuedetails', upadtedIssueDetails);
         this.issueService.notifyWatchListOnIssueUpdates(upadtedIssueDetails);
     }
 }
@@ -1399,12 +1401,14 @@ class IssuesService {
             }),
         };
         // intiliaze
-        this.baseUrl = 'http://localhost:3001/api/v1';
-        this.socketUrl = 'http://localhost:3001/issue/notify';
+        // public baseUrl = 'http://localhost:3001/api/v1';
+        // public socketUrl = 'http://localhost:3001/issue/notify';
+        this.baseUrl = 'http://api.itracker.kanbanboard.co.in/api/v1';
+        this.socketUrl = 'http://api.itracker.kanbanboard.co.in/issue/notify';
         // socket emitters and listeners
         // listen to intiate authentication event
         this.initSocketAuthentication = () => {
-            console.log('listen to init authentication');
+            console.debug('listen to init authentication');
             return new rxjs__WEBPACK_IMPORTED_MODULE_2__["Observable"]((observer) => {
                 this.socket.on('authenticate', (data) => {
                     observer.next(data);
@@ -1413,12 +1417,12 @@ class IssuesService {
         };
         // emit authenticate user event
         this.authenticateUser = (authDetails) => {
-            console.log('EMit Authenticate User Event', authDetails);
+            console.debug('EMit Authenticate User Event', authDetails);
             this.socket.emit('auth', authDetails);
         };
         // listen to authenticated event
         this.isUserSocketVerified = () => {
-            console.log('Auth Status Listener');
+            console.debug('Auth Status Listener');
             return new rxjs__WEBPACK_IMPORTED_MODULE_2__["Observable"]((observer) => {
                 this.socket.on('authStatus', (data) => {
                     observer.next(data);
@@ -1427,12 +1431,12 @@ class IssuesService {
         };
         // emit issue update event
         this.notifyWatchListOnIssueUpdates = (issueDetails) => {
-            console.log('Emit issue update event:', issueDetails);
+            console.debug('Emit issue update event:', issueDetails);
             this.socket.emit('issue-updates-client', issueDetails);
         };
         // listen to issue update event for notifying watchlist users
         this.issueUpdatesForWatchListListener = () => {
-            console.log('issueupdates listener');
+            console.debug('issueupdates listener');
             return new rxjs__WEBPACK_IMPORTED_MODULE_2__["Observable"]((observer) => {
                 this.socket.on('issue-updates-server', (data) => {
                     observer.next(data);
@@ -1454,55 +1458,55 @@ class IssuesService {
     }
     // get all issues for a id
     getAllIssuesByIdService(userInfo) {
-        console.log('Get All Issue Service', userInfo);
+        console.debug('Get All Issue Service', userInfo);
         const allIssuesRes = this.http.get(`${this.baseUrl}/issue/allIssues?userId=${userInfo.userId}`, this.httpHeaderOptions);
         return allIssuesRes;
     }
     // get allIssues in the system
     getFilteredIssues(filterOptions) {
-        console.log('filter issues in the system', filterOptions);
+        console.debug('filter issues in the system', filterOptions);
         const { userId, name, option, type } = filterOptions;
         const allIssues = this.http.get(`${this.baseUrl}/issue/filter?userId=${userId}&name=${name}&option=${option}&type=${type}`, this.httpHeaderOptions);
         return allIssues;
     }
     // get watchlist/assignee list
     getAllUsers(authDetails) {
-        console.log('Get all users service', authDetails);
+        console.debug('Get all users service', authDetails);
         const { userId } = authDetails;
         const allUsers = this.http.get(`${this.baseUrl}/user/all?userId=${userId}`, this.httpHeaderOptions);
         return allUsers;
     }
     // create issue
     createIssue(issueDetails) {
-        console.log('Create issue service', issueDetails);
+        console.debug('Create issue service', issueDetails);
         const { userId } = issueDetails;
         const createdIssue = this.http.post(`${this.baseUrl}/issue/create?userId=${userId}`, issueDetails, this.httpHeaderOptions);
         return createdIssue;
     }
     // search Issue
     searchIssues(searchDeatils) {
-        console.log('Issue Search', searchDeatils);
+        console.debug('Issue Search', searchDeatils);
         const { userId, search } = searchDeatils;
         const searchResults = this.http.get(`${this.baseUrl}/issue/search?userId=${userId}&search=${search}`, this.httpHeaderOptions);
         return searchResults;
     }
     // upload attachment
     uploadAttachment(fileDetails) {
-        console.log('Attachment upload:', fileDetails);
+        console.debug('Attachment upload:', fileDetails);
         const { userId, issueId, formData } = fileDetails;
         const uploadResults = this.http.post(`${this.baseUrl}/issue/upload?userId=${userId}&issueId=${issueId}`, formData, this.httpHeaderOptions);
         return uploadResults;
     }
     // update issue
     updateIssue(issueDetails) {
-        console.log('Update Issue:', issueDetails);
+        console.debug('Update Issue:', issueDetails);
         const { userId } = issueDetails;
         const updatedIssues = this.http.post(`${this.baseUrl}/issue/update?userId=${userId}`, issueDetails, this.httpHeaderOptions);
         return updatedIssues;
     }
     // add comment
     manageCommentService(commentDetails) {
-        console.log('add comment:', commentDetails);
+        console.debug('add comment:', commentDetails);
         const { userId, issueId, text, name, operation, commentId, } = commentDetails;
         let commentsOpsUrl = '';
         let body = {};
@@ -1702,7 +1706,7 @@ class DashboardComponent {
     }
     // auth status listener
     checkSocketStatus() {
-        console.log('Checking for auth--status');
+        console.debug('Checking for auth--status');
         this.issueService.isUserSocketVerified().subscribe((data) => {
             // this.toaster.open({ text: data, type: 'info' });
             this.toast.success(`${data}`, 'Notification', this.toastConfig);
@@ -1711,12 +1715,12 @@ class DashboardComponent {
     }
     // listen for any issue updates and notify to the users
     listenForAnyIssueUpdates() {
-        console.log('listen for any issue updates');
+        console.debug('listen for any issue updates');
         this.issueService
             .issueUpdatesForWatchListListener()
             .subscribe((data) => {
             const { issueId, field, message, watchList } = data;
-            console.log('issue update listener:', data);
+            console.debug('issue update listener:', data);
             if (watchList.includes(this.userId)) {
                 // current user is in the watchlist ,show notification
                 const notification = this.toast.info(`${message}`, 'Issue Updated');
@@ -1771,14 +1775,14 @@ class DashboardComponent {
     }
     // listener for new issue creates
     updateNewIssue(values) {
-        console.error('new issue from create-issue-compoennet', values);
+        console.debug('new issue from create-issue-compoennet', values);
         this.activePageDataChunks.push(values);
     }
     // logout user
     logout() {
-        console.log('logout clicks');
+        console.debug('logout clicks');
         this.showProgressBar = false;
-        console.log('show progress bar:', this.showProgressBar);
+        console.debug('show progress bar:', this.showProgressBar);
         // delete cookies
         ng2_cookies__WEBPACK_IMPORTED_MODULE_1__["Cookie"].delete('name');
         ng2_cookies__WEBPACK_IMPORTED_MODULE_1__["Cookie"].delete('email');
@@ -1795,15 +1799,15 @@ class DashboardComponent {
         this.authService.signOut();
     }
     getAllIssues() {
-        console.log('get all issue api call');
+        console.debug('get all issue api call');
         const userInfo = {
             userId: this.userId,
         };
-        console.log(userInfo);
+        console.debug(userInfo);
         this.issueService.getAllIssuesByIdService(userInfo).subscribe(
         // success response
         (response) => {
-            console.log('All issues response');
+            console.debug('All issues response');
             this.allIssues = response.data;
             if (response.status === 200) {
                 // conditional render the issue table
@@ -1824,7 +1828,7 @@ class DashboardComponent {
                 this.length = this.allIssues.length;
                 // chunks
                 this.activePageDataChunks = this.allIssues.slice(0, this.pageSize);
-                console.error('active page chunks:', this.activePageDataChunks);
+                console.debug('active page chunks:', this.activePageDataChunks);
                 // toast
                 // this.toaster.open({ text: 'Issues Fetched', type: 'success' });
                 this.toast.success(`${response.message}`, 'Issue', this.toastConfig);
@@ -1845,7 +1849,7 @@ class DashboardComponent {
             type,
             name,
         };
-        console.log(filterOptions);
+        console.debug(filterOptions);
         switch (option) {
             case 'all':
                 this.displayFilterType = 'All issues in the tracker';
@@ -1885,7 +1889,7 @@ class DashboardComponent {
                     this.length = this.allIssues.length;
                     // chunks
                     this.activePageDataChunks = this.allIssues.slice(0, this.pageSize);
-                    console.log('active page chunks:', this.activePageDataChunks);
+                    console.debug('active page chunks:', this.activePageDataChunks);
                     // this.toaster.open({ text: 'Filtered Issues', type: 'success' });
                     this.toast.success(`${response.message}`, 'Filter Issue', this.toastConfig);
                     // show categorized view and hide the filtered one
@@ -1946,7 +1950,7 @@ class DashboardComponent {
     }
     // search issues
     searchIssues(search) {
-        console.log('Seach issue service call', search);
+        console.debug('Seach issue service call', search);
         const searchDetails = {
             userId: this.userId,
             search,
@@ -1954,7 +1958,7 @@ class DashboardComponent {
         this.issueService.searchIssues(searchDetails).subscribe(
         // success
         (response) => {
-            console.log('Search issue response:', response);
+            console.debug('Search issue response:', response);
             if (response.status === 200) {
                 this.allIssues = response.data;
                 // conditional render the issue table
@@ -1975,21 +1979,21 @@ class DashboardComponent {
                 this.length = this.allIssues.length;
                 // chunks
                 this.activePageDataChunks = this.allIssues.slice(0, this.pageSize);
-                console.error('active page chunks:', this.activePageDataChunks);
+                console.debug('active page chunks:', this.activePageDataChunks);
                 // this.toaster.open({ text: 'Searched Issues', type: 'success' });
                 this.toast.success(`${response.message}`, 'Search Issue', this.toastConfig);
             }
         }, 
         // error
         (error) => {
-            console.error('Error Fetching Issues', error);
+            console.warn('Error Fetching Issues', error);
             // this.toaster.open({ text: error.error.message, type: 'danger' });
             this.toast.success(`${error.error.message}`, 'Search Issue', this.toastConfig);
         });
     }
     // fetch all users
     fetchAllUsers() {
-        console.log('user id from dashboard-get allusers', this.userId);
+        console.debug('user id from dashboard-get allusers', this.userId);
         const authDetails = {
             userId: this.userId,
         };
@@ -2002,26 +2006,26 @@ class DashboardComponent {
         }, 
         // handle error response
         (error) => {
-            console.log('Error fetching user details', error);
+            console.warn('Error fetching user details', error);
             // this.toaster.open({ text: 'Something went wrong', type: 'danger' });
             this.toast.success('Something went wrong', 'All Users', this.toastConfig);
         });
     }
     // single issue view
     viewSingleIssue(issueId, type) {
-        console.log('View single Issue component', issueId);
+        console.debug('View single Issue component', issueId);
         // find the single issue details
         if (type === 'notification') {
-            console.log('type:-notification', this.allAvailableIssues);
+            console.debug('type:-notification', this.allAvailableIssues);
             this.issueDetails = this.allAvailableIssues.find((iss) => iss.issueId === issueId);
         }
         else {
             this.issueDetails = this.activePageDataChunks.find((iss) => iss.issueId === issueId);
         }
-        console.log('issueDetails', this.issueDetails);
+        console.debug('issueDetails', this.issueDetails);
         this.issueDetails.assigneeOptions = this.allUsersList;
         this.issueDetails.watchListOptions = this.allUsersList;
-        console.log('issuedetails-modifying additional onbj', this.issueDetails);
+        console.debug('issuedetails-modifying additional onbj', this.issueDetails);
         // update the assignee name
         const currentAssigneeObject = this.issueDetails.watchListOptions.find((usr) => {
             return usr.userId === this.issueDetails.assignee;
@@ -2029,10 +2033,10 @@ class DashboardComponent {
         this.issueDetails.assigneeName = currentAssigneeObject.name;
         // filter unique values of watchers
         const uniqueWatchers = this.removeDuplicates(this.issueDetails.watchList, '_id');
-        console.log('uniquewatchlist', uniqueWatchers);
+        console.debug('uniquewatchlist', uniqueWatchers);
         this.issueDetails.watchList = uniqueWatchers;
         // compute isWatcher flag for current logged in user
-        console.log('computing isWatcher:', this.issueDetails.watchList, this.userId);
+        console.debug('computing isWatcher:', this.issueDetails.watchList, this.userId);
         let isWatcher = false;
         this.issueDetails.watchList.map((usr) => {
             if (usr.userId === this.userId) {
@@ -2043,7 +2047,7 @@ class DashboardComponent {
         // hide categorized table view
         this.showCategorizedIssues = true;
         this.showSingleIssue = false;
-        console.log('Single Issue details', this.issueDetails);
+        console.debug('Single Issue details', this.issueDetails);
         /*this.toaster.open({
           text: `openning ${this.issueDetails.title}`,
           type: 'dark',
@@ -2434,7 +2438,7 @@ class SignupComponent {
             password: this.password,
         };
         this.userService.signUpService(userData).subscribe((response) => {
-            console.log('register user', userData);
+            console.debug('register user', userData);
             if (response.status === 200) {
                 this.responseType = true;
             }
@@ -2472,7 +2476,7 @@ class SignupComponent {
     }
     // naviagation
     navigateToHome() {
-        console.log('navigation');
+        console.debug('navigation');
         this.router.navigate(['/home']);
     }
 }
@@ -2584,11 +2588,11 @@ class SaveCancelComponent {
     }
     ngOnInit() { }
     save() {
-        console.log('save ops in save-cancel comp');
+        console.debug('save ops in save-cancel comp');
         this.saveOps.emit();
     }
     cancel() {
-        console.log('cancel ops in save-cancel comp');
+        console.debug('cancel ops in save-cancel comp');
         this.cancelOps.emit();
     }
 }
@@ -2662,7 +2666,7 @@ class SocialLoginComponent {
     }
     ngOnInit() { }
     googleSignIn() {
-        console.log('login with google');
+        console.debug('login with google');
         this.toast.info('Please user different login methods- ClientId Error- OAuth Rejected', 'Google Login', { timeOut: 10000 });
         this.authService
             .signIn(ng_social_login_module__WEBPACK_IMPORTED_MODULE_1__["GoogleLoginProvider"].PROVIDER_ID)
@@ -2670,10 +2674,10 @@ class SocialLoginComponent {
             this.user = userdata;
             this.name = userdata.name;
             this.email = userdata.email;
-            console.log('userdata-google', userdata);
+            console.debug('userdata-google', userdata);
         })
             .catch((error) => {
-            console.log('google login error', error);
+            console.debug('google login error', error);
         });
     }
     fbSignIn() {
@@ -2683,12 +2687,12 @@ class SocialLoginComponent {
             this.user = userdata;
             this.name = userdata.name;
             this.email = userdata.email;
-            console.log('userdata -fb', userdata);
+            console.debug('userdata -fb', userdata);
             this.setUserInfo();
         });
     }
     linkedInSignIn() {
-        console.log(ng_social_login_module__WEBPACK_IMPORTED_MODULE_1__["LinkedinLoginProvider"].PROVIDER_ID);
+        console.debug(ng_social_login_module__WEBPACK_IMPORTED_MODULE_1__["LinkedinLoginProvider"].PROVIDER_ID);
         this.toast.info('Please user different login methods- OAuth Rejected by linkedin', 'LinkenId Login', { timeOut: 10000 });
         this.authService
             .signIn(ng_social_login_module__WEBPACK_IMPORTED_MODULE_1__["LinkedinLoginProvider"].PROVIDER_ID)
@@ -2696,10 +2700,10 @@ class SocialLoginComponent {
             this.user = userdata;
             this.name = userdata.name;
             this.email = userdata.email;
-            console.log('userdata -linked ini', userdata);
+            console.debug('userdata -linked ini', userdata);
         })
             .catch((error) => {
-            console.log('google login error', error);
+            console.debug('google login error', error);
         });
     }
     setUserInfo() {
@@ -2716,7 +2720,7 @@ class SocialLoginComponent {
             name: this.name,
         };
         this.userService.verifySocialLoginService(userDetails).subscribe((response) => {
-            console.log('login res:', response);
+            console.debug('login res:', response);
             this.responseMsg = `${response.message} --taking you to dashboard`;
             this.responseType = true;
             const { name, email, username, userId, authToken } = response.data;
@@ -2847,7 +2851,7 @@ class CreateIssueComponent {
         this.statusOptions = ['Backlogs', 'Progress', 'Test', 'Done'];
         this.priorityOptions = ['High', 'Medium', 'Low'];
         // this.userId = Cookie.get('userId');
-        console.log(this.userId);
+        console.debug(this.userId);
     }
     ngOnInit() {
         this.fetchAllUsers();
@@ -2863,14 +2867,14 @@ class CreateIssueComponent {
             estimates: this.originalEstimates,
             assignee: this.assignee,
         };
-        console.log('Issue __ new:', newIssue);
+        console.debug('Issue __ new:', newIssue);
         this.issueService.createIssue(newIssue).subscribe((response) => {
-            console.log('create issue response:', response);
+            console.debug('create issue response:', response);
             if (response.status === 200) {
-                console.log('issue create success');
+                console.debug('issue create success');
                 this.toaster.open({ text: 'Issue Created', type: 'success' });
                 this.closeModal.emit();
-                console.log('New Issue Create event', typeof response.data);
+                console.debug('New Issue Create event', typeof response.data);
                 this.newCreatedIssue.emit('response.data');
             }
         }, (error) => {
@@ -2881,7 +2885,7 @@ class CreateIssueComponent {
     }
     // fetch all users
     fetchAllUsers() {
-        console.log('user id from dashboard', this.userId, this.username);
+        console.debug('user id from dashboard', this.userId, this.username);
         const authDetails = {
             userId: this.userId,
         };
@@ -2892,11 +2896,11 @@ class CreateIssueComponent {
                 this.assigneeOptions = response.data;
                 this.watchList = response.data;
             }
-            console.log(response.data);
+            console.debug(response.data);
         }, 
         // handle error response
         (error) => {
-            console.log('Error fetching user details', error);
+            console.warn('Error fetching user details', error);
             this.toaster.open({ text: 'Something went wrong', type: 'danger' });
         });
     }
@@ -3155,16 +3159,16 @@ class WatchersComponent {
         this.updatedWatchers = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["EventEmitter"]();
         this.addWatchers = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["EventEmitter"]();
         if (this.existingWatchList && this.existingWatchList.length > 0) {
-            console.log('constructur update');
+            console.debug('constructur update');
             this.currentWatchList = this.existingWatchList;
         }
     }
     ngOnInit() {
-        console.log('nginit update');
+        console.debug('nginit update');
         this.currentWatchList = this.existingWatchList;
     }
     addWatcher(event) {
-        console.log('add event', event);
+        console.debug('add event', event);
         const input = event.input;
         const value = event.value;
         // Add watchers
@@ -3176,29 +3180,29 @@ class WatchersComponent {
             input.value = '';
         }
         this.watchersCtrl.setValue(null);
-        console.log('after addition , current watchlist,', this.currentWatchList);
+        console.debug('after addition , current watchlist,', this.currentWatchList);
     }
     removeWatcher(watcher) {
-        console.log('remove', watcher);
+        console.debug('remove', watcher);
         const index = this.currentWatchList.indexOf(watcher);
         if (index >= 0) {
             this.currentWatchList.splice(index, 1);
         }
         this.updatedWatchList = [];
         this.updatedWatchList.push(watcher);
-        console.log('updated list removal:', this.updatedWatchList);
+        console.debug('updated list removal:', this.updatedWatchList);
         // emitt removal event
         this.removeWatchers.emit(this.updatedWatchList[0]);
-        console.log('after removing', this.currentWatchList);
-        console.log('current watchlist', this.existingWatchList);
+        console.debug('after removing', this.currentWatchList);
+        console.debug('current watchlist', this.existingWatchList);
     }
     selectedWatcher(event) {
         // this.currentWatchList = [];
         this.currentWatchList.push(event.option.value);
-        console.log('after addition , current watchlist,', this.currentWatchList);
+        console.debug('after addition , current watchlist,', this.currentWatchList);
         this.updatedWatchList.push(event.option.value);
         // emit updated watchlist to parent component
-        console.log('updated list:', this.updatedWatchList);
+        console.debug('updated list:', this.updatedWatchList);
         this.addWatchers.emit(this.updatedWatchList[0]);
         // this.updatedWatchers.emit(this.updatedWatchList);
         this.watcherInput.nativeElement.value = '';
@@ -3287,7 +3291,8 @@ class UserService {
     constructor(http) {
         this.http = http;
         // initialize
-        this.baseUrl = 'http://localhost:3001/api/v1';
+        // public baseUrl = 'http://localhost:3001/api/v1';
+        this.baseUrl = 'http://api.itracker.kanbanboard.co.in/api/v1';
     }
     // handle exceptions
     handleError(error) {
@@ -3296,30 +3301,30 @@ class UserService {
     }
     // user registration service
     signUpService(newUser) {
-        console.log('Signup service apicall', newUser);
+        console.debug('Signup service apicall', newUser);
         const signUpRes = this.http.post(`${this.baseUrl}/user/register`, newUser);
         return signUpRes;
     }
     // login service
     loginService(userData) {
-        console.log('Login api call', userData);
+        console.debug('Login api call', userData);
         const loginRes = this.http.post(`${this.baseUrl}/user/login`, userData);
         return loginRes;
     }
     // store authenticated user info
     setUserAuth(data) {
-        console.log('Set user auth data', data);
+        console.debug('Set user auth data', data);
         localStorage.setItem('userInfo', JSON.stringify(data));
     }
     // get auth info
     getUserAuth() {
-        console.log('get user auth');
+        console.debug('get user auth');
         const authInfo = JSON.parse(localStorage.getItem('userInfo'));
         return authInfo === null ? '' : authInfo;
     }
     // social login verification
     verifySocialLoginService(userDetails) {
-        console.log('verify social login serice:', userDetails);
+        console.debug('verify social login serice:', userDetails);
         const { name, email } = userDetails;
         const verficationResult = this.http.get(`${this.baseUrl}/user/social/verify?email=${email}&name=${name}`);
         return verficationResult;
@@ -3725,7 +3730,7 @@ const htmlparser2 = __webpack_require__(/*! htmlparser2 */ "hS6j");
 class ParseHtmlPipe {
     constructor(sanitizer) {
         this.sanitizer = sanitizer;
-        console.log('pipe');
+        console.debug('pipe');
     }
     transform(value) {
         return this.sanitizer.bypassSecurityTrustHtml(value);
@@ -3766,7 +3771,7 @@ class RouterGuardService {
         this.router = router;
     }
     canActivate(router) {
-        console.log('Guard Route');
+        console.debug('Guard Route');
         const authToken = ng2_cookies__WEBPACK_IMPORTED_MODULE_1__["Cookie"].get('authToken');
         if (authToken === null || authToken === undefined || authToken === '') {
             this.router.navigate(['/login']);
@@ -3816,7 +3821,6 @@ class EditorComponent {
     }
     ngOnInit() { }
     onChange(value) {
-        console.debug('dshdg');
         this.changeEvent.emit(value);
     }
 }
